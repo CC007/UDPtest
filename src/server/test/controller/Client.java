@@ -1,10 +1,12 @@
 package server.test.controller;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,6 +14,7 @@ import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,13 +36,17 @@ public class Client extends Thread implements Serializable {
     @Override
     public void run() {
         try {
+            Scanner  inFromUser = new Scanner(
+                    new BufferedReader(new BufferedReader(new InputStreamReader(System.in))));
             //Create data output
-            ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
+            ByteArrayOutputStream 
+            bout = new ByteArrayOutputStream(4096);
             DataOutputStream out = new DataOutputStream(bout);
-            out.writeInt(20);
-            out.writeInt(50);
-            out.writeInt(3);
-            out.writeInt(-2);
+            System.out.println("Geef de x, y, dx, en dy:");
+            out.writeInt(inFromUser.nextInt());
+            out.writeInt(inFromUser.nextInt());
+            out.writeInt(inFromUser.nextInt());
+            out.writeInt(inFromUser.nextInt());
             DatagramPacket sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, InetAddress.getLocalHost(), port);
             socket.send(sendPacket);
             DatagramPacket receivePacket = new DatagramPacket(new byte[4096], 4096);
