@@ -15,6 +15,18 @@ import java.util.logging.Logger;
 public class Server extends Thread {
 
     public static final int OK = 0;
+    public static final int ERROR = 1;
+    public static final int CANCEL = Integer.MAX_VALUE;
+    
+    public static final int SEND_JOIN_REQUEST = 100;
+    public static final int SEND_JOIN_ACCEPTED = 101;
+    public static final int SEND_SPECTATE_REQUEST = 110;
+    public static final int SEND_SPECTATE_ACCEPTED = 111;
+    
+    public static final int SEND_GAME_OBJECT_DATA = 200;
+    
+    
+    public static final int SEND_GAME_OVER = 300;
     DatagramSocket serverSocket;
     boolean running;
 
