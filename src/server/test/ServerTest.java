@@ -20,7 +20,13 @@ public class ServerTest {
         try {
             Server server = new Server(25565);
             server.start();
-            while (!server.isRunning());
+            while (!server.isRunning()){
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
             Client client = new Client(25565);
             client.start();
         } catch (SocketException | UnknownHostException ex) {
