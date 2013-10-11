@@ -36,6 +36,14 @@ public class ServerController extends Thread {
     public static final int GAME_OBJECT_DATA_ERROR = 2010;
     public static final int GAME_OBJECT_DATA_ACCEPTED = 2011;
     public static final int GAME_OBJECT_DATA_INCOMPLETE = 2012;
+    
+    public static final int SEND_KEY_EVENT_DATA = 210;
+    public static final int NOT_READY_FOR_KEY_EVENT_DATA = 2100;
+    public static final int READY_FOR_KEY_EVENT_DATA = 2101;
+    public static final int KEY_EVENT_DATA_ERROR = 2110;
+    public static final int KEY_EVENT_DATA_ACCEPTED = 2111;
+    public static final int KEY_EVENT_DATA_INCOMPLETE = 2112;
+    
     public static final int CANCEL = Integer.MAX_VALUE; //CANCEL can be used if a wrong input was given
     /**/
     public static final int SEND_GAME_OVER_WON = 300;
