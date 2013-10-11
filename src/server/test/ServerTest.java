@@ -20,6 +20,7 @@ public class ServerTest {
         try {
             Server server = new Server(25565);
             server.start();
+            System.out.println("blass");
             Client client = new Client(25565);
             client.start();
         } catch (SocketException | UnknownHostException ex) {
