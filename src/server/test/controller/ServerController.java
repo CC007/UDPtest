@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author Rik Schaaf
  */
-public class Server extends Thread {
+public class ServerController extends Thread {
 
     public static final int ERROR = 0; //Send when a corrupt packet was received
     public static final int OK = 1; //Send when a packet was succesfully received
@@ -49,7 +49,7 @@ public class Server extends Thread {
     DatagramPacket receivePacket;
     DatagramPacket sendPacket;
 
-    public Server(int port) throws SocketException {
+    public ServerController(int port) throws SocketException {
         this.serverSocket = new DatagramSocket(port);
     }
 
@@ -63,15 +63,15 @@ public class Server extends Thread {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
                 DataOutputStream out = new DataOutputStream(bout);
                 switch (in.readInt()) {
-                    case Server.SERVER_READY:
-                        out.writeInt(Server.OK);
+                    case ServerController.SERVER_READY:
+                        out.writeInt(ServerController.OK);
                         sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, receivePacket.getAddress(), receivePacket.getPort());
                         serverSocket.send(sendPacket);
                         break;
-                    case Server.CLOSE_SERVER:
+                    case ServerController.CLOSE_SERVER:
                         return;
-                    case Server.SEND_GAME_OBJECT_DATA:
-                        out.writeInt(Server.READY_FOR_GAME_OBJECT_DATA);
+                    case ServerController.SEND_GAME_OBJECT_DATA:
+                        out.writeInt(ServerController.READY_FOR_GAME_OBJECT_DATA);
                         sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, receivePacket.getAddress(), receivePacket.getPort());
                         serverSocket.send(sendPacket);
                         receivePacket = new DatagramPacket(new byte[4096], 4096);
@@ -85,15 +85,15 @@ public class Server extends Thread {
                         System.out.println("SERVER: client send x=" + x + ", y=" + y + ", dx=" + dx + ", dy=" + dy + ".");
                         bout = new ByteArrayOutputStream(4096);
                         out = new DataOutputStream(bout);
-                        out.writeInt(Server.GAME_OBJECT_DATA_ACCEPTED);
+                        out.writeInt(ServerController.GAME_OBJECT_DATA_ACCEPTED);
                         sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, receivePacket.getAddress(), receivePacket.getPort());
                         serverSocket.send(sendPacket);
                         break;
                 }
             } catch (SocketException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
-                Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }

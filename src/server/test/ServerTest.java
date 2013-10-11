@@ -18,9 +18,9 @@ public class ServerTest {
     @SuppressWarnings("empty-statement")
     public static void main(String[] args) {
         try {
-            Server server = new Server(25565);
+            ServerController server = new ServerController(25565);
             server.start();
-            Client client = new Client(25565);
+            ClientController client = new ClientController(25565);
             client.start();
         } catch (SocketException | UnknownHostException ex) {
             Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);

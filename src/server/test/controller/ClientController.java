@@ -23,7 +23,7 @@ import server.test.ServerTest;
  *
  * @author Rik Schaaf
  */
-public class Client extends Thread implements Serializable {
+public class ClientController extends Thread implements Serializable {
 
     DatagramSocket socket;
     DatagramPacket receivePacket;
@@ -34,7 +34,7 @@ public class Client extends Thread implements Serializable {
     DataOutputStream out;
     int port;
 
-    public Client(int port) throws SocketException, UnknownHostException {
+    public ClientController(int port) throws SocketException, UnknownHostException {
 
         this.socket = new DatagramSocket();
         this.port = port;
@@ -47,8 +47,8 @@ public class Client extends Thread implements Serializable {
             Scanner inFromUser = new Scanner(
                     new BufferedReader(
                     new InputStreamReader(System.in)));
-            this.sendAndWait(Server.SERVER_READY, Server.OK);
-            this.sendAndWait(Server.SEND_GAME_OBJECT_DATA, Server.READY_FOR_GAME_OBJECT_DATA);
+            this.sendAndWait(ServerController.SERVER_READY, ServerController.OK);
+            this.sendAndWait(ServerController.SEND_GAME_OBJECT_DATA, ServerController.READY_FOR_GAME_OBJECT_DATA);
             System.out.println("Geef de x, y, dx, en dy:");
             do {
                 bout = new ByteArrayOutputStream(4096);
@@ -68,10 +68,10 @@ public class Client extends Thread implements Serializable {
                 } catch (InterruptedException ex) {
                     Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            } while (in.readInt() != Server.READY_FOR_GAME_OBJECT_DATA);
+            } while (in.readInt() != ServerController.READY_FOR_GAME_OBJECT_DATA);
             System.out.println("CLIENT: server accepted the data.");
         } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -99,9 +99,9 @@ public class Client extends Thread implements Serializable {
                 }
             } while (actualResponse != expectedResponse);
         } catch (UnknownHostException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
