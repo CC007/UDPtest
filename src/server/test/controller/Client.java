@@ -17,6 +17,7 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import server.test.ServerTest;
 
 /**
  *
@@ -25,9 +26,16 @@ import java.util.logging.Logger;
 public class Client extends Thread implements Serializable {
 
     DatagramSocket socket;
+    DatagramPacket receivePacket;
+    DatagramPacket sendPacket;
+    ByteArrayInputStream bin;
+    ByteArrayOutputStream bout;
+    DataInputStream in;
+    DataOutputStream out;
     int port;
 
     public Client(int port) throws SocketException, UnknownHostException {
+
         this.socket = new DatagramSocket();
         this.port = port;
 
@@ -36,27 +44,66 @@ public class Client extends Thread implements Serializable {
     @Override
     public void run() {
         try {
-            Scanner  inFromUser = new Scanner(
-                    new BufferedReader(new BufferedReader(new InputStreamReader(System.in))));
-            //Create data output
-            ByteArrayOutputStream 
-            bout = new ByteArrayOutputStream(4096);
-            DataOutputStream out = new DataOutputStream(bout);
+            Scanner inFromUser = new Scanner(
+                    new BufferedReader(
+                    new InputStreamReader(System.in)));
+            this.sendAndWait(Server.SERVER_READY, Server.OK);
+            this.sendAndWait(Server.SEND_GAME_OBJECT_DATA, Server.READY_FOR_GAME_OBJECT_DATA);
             System.out.println("Geef de x, y, dx, en dy:");
-            out.writeInt(inFromUser.nextInt());
-            out.writeInt(inFromUser.nextInt());
-            out.writeInt(inFromUser.nextInt());
-            out.writeInt(inFromUser.nextInt());
-            DatagramPacket sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, InetAddress.getLocalHost(), port);
-            socket.send(sendPacket);
-            DatagramPacket receivePacket = new DatagramPacket(new byte[4096], 4096);
-            socket.receive(receivePacket);
-            DataInputStream in = new DataInputStream(new ByteArrayInputStream(receivePacket.getData()));
-            if (in.readInt() == Server.OK) {
-                System.out.println("CLIENT: server send OK back.");
-            }
+            do {
+                bout = new ByteArrayOutputStream(4096);
+                out = new DataOutputStream(bout);
+                out.writeInt(inFromUser.nextInt());
+                out.writeInt(inFromUser.nextInt());
+                out.writeInt(inFromUser.nextInt());
+                out.writeInt(inFromUser.nextInt());
+                sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, InetAddress.getLocalHost(), port);
+                socket.send(sendPacket);
+                receivePacket = new DatagramPacket(new byte[4096], 4096);
+                socket.receive(receivePacket);
+                bin = new ByteArrayInputStream(receivePacket.getData());
+                in = new DataInputStream(bin);
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } while (in.readInt() != Server.READY_FOR_GAME_OBJECT_DATA);
+            System.out.println("CLIENT: server accepted the data.");
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void sendAndWait(int sendData, int expectedResponse) {
+        int counter = 0;
+        int actualResponse;
+        try {
+            do {
+                if (counter == 0) {
+                    bout = new ByteArrayOutputStream(4096);
+                    out = new DataOutputStream(bout);
+                    out.writeInt(sendData);
+                }
+                sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, InetAddress.getLocalHost(), port);
+                socket.send(sendPacket);
+                receivePacket = new DatagramPacket(new byte[4096], 4096);
+                socket.receive(receivePacket);
+                bin = new ByteArrayInputStream(receivePacket.getData());
+                in = new DataInputStream(bin);
+                actualResponse = in.readInt();
+                if (actualResponse != expectedResponse) {
+                    System.out.println(actualResponse + " in stead of " + expectedResponse);
+                    Thread.sleep(50);
+                    counter = (counter == 10 ? 0 : counter + 1);
+                }
+            } while (actualResponse != expectedResponse);
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
