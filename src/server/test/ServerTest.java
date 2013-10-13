@@ -1,5 +1,7 @@
 package server.test;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
@@ -18,13 +20,14 @@ public class ServerTest {
     @SuppressWarnings("empty-statement")
     public static void main(String[] args) {
         try {
-            ServerController server = new ServerController(25565);
+            ServerController server = new ServerController(new InetSocketAddress(InetAddress.getLocalHost(), 25565));
             server.start();
-            ClientController client = new ClientController(25565);
+            ClientController client = new ClientController(new InetSocketAddress(InetAddress.getLocalHost(), 25566), new InetSocketAddress(InetAddress.getLocalHost(), 25565));
             client.start();
-        } catch (SocketException | UnknownHostException ex) {
+        } catch (SocketException ex){
+            Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
+        }catch(UnknownHostException ex) {
             Logger.getLogger(ServerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 }

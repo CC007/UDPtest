@@ -5,10 +5,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,88 +24,44 @@ import java.util.logging.Logger;
  */
 public class ServerController extends Thread {
 
-    public static final int ERROR = 0; //Send when a corrupt packet was received
-    public static final int OK = 1; //Send when a packet was succesfully received
-    public static final int SERVER_READY = 2; //Ask whether or not the server is ready (respond with OK).
-    public static final int CLOSE_SERVER = 3;
-    /**/
-    public static final int SEND_JOIN_REQUEST = 100;
-    public static final int SEND_JOIN_ERROR = 1000;
-    public static final int SEND_JOIN_ACCEPTED = 1001;
-    public static final int SEND_SPECTATE_REQUEST = 101;
-    public static final int SEND_SPECTATE_ERROR = 1010;
-    public static final int SEND_SPECTATE_ACCEPTED = 1011;
-    /**/
-    public static final int SEND_GAME_OBJECT_DATA = 200;
-    public static final int NOT_READY_FOR_GAME_OBJECT_DATA = 2000;
-    public static final int READY_FOR_GAME_OBJECT_DATA = 2001;
-    public static final int GAME_OBJECT_DATA_ERROR = 2010;
-    public static final int GAME_OBJECT_DATA_ACCEPTED = 2011;
-    public static final int GAME_OBJECT_DATA_INCOMPLETE = 2012;
-    
-    public static final int SEND_KEY_EVENT_DATA = 210;
-    public static final int NOT_READY_FOR_KEY_EVENT_DATA = 2100;
-    public static final int READY_FOR_KEY_EVENT_DATA = 2101;
-    public static final int KEY_EVENT_DATA_ERROR = 2110;
-    public static final int KEY_EVENT_DATA_ACCEPTED = 2111;
-    public static final int KEY_EVENT_DATA_INCOMPLETE = 2112;
-    
-    public static final int CANCEL = Integer.MAX_VALUE; //CANCEL can be used if a wrong input was given
-    /**/
-    public static final int SEND_GAME_OVER_WON = 300;
-    public static final int SEND_GAME_OVER_LOST = 301;
-    /**/
-    public static final int SEND_TEXT_MESSAGE = 400;
-    public static final int TEXT_MESSAGE_RECEIVED = 4000;
-    public static final int TEXT_MESSAGE_ERROR = 4001;
-    /**/
-    DatagramSocket serverSocket;
-    DatagramPacket receivePacket;
-    DatagramPacket sendPacket;
+    protected DatagramSocket socket;
+    protected DatagramPacket receivePacket;
+    protected DatagramPacket sendPacket;
+    protected ByteArrayInputStream bin;
+    protected ByteArrayOutputStream bout;
+    protected DataInputStream din;
+    protected DataOutputStream dout;
+    protected ObjectInputStream in;
+    protected ObjectOutputStream out;
+    protected volatile boolean running;
+    private Collection<InetSocketAddress> clients;
+    private Collection<InetSocketAddress> players;
+    private Collection<InetSocketAddress> spectators;
 
-    public ServerController(int port) throws SocketException {
-        this.serverSocket = new DatagramSocket(port);
+    public ServerController(InetSocketAddress address) throws SocketException {
+        this.socket = new DatagramSocket(address);
+        this.running = true;
+        this.clients = Collections.synchronizedList(new LinkedList<InetSocketAddress>());
+        this.players = Collections.synchronizedList(new LinkedList<InetSocketAddress>());
+        this.spectators = Collections.synchronizedList(new LinkedList<InetSocketAddress>());
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (running) {
             try {
                 receivePacket = new DatagramPacket(new byte[4096], 4096);
-                serverSocket.receive(receivePacket);
-                DataInputStream in = new DataInputStream(new ByteArrayInputStream(receivePacket.getData()));
-                ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
-                DataOutputStream out = new DataOutputStream(bout);
+                socket.receive(receivePacket);
+                bin = new ByteArrayInputStream(receivePacket.getData());
+                din = new DataInputStream(bin);
+                in = new ObjectInputStream(din);
+                bout = new ByteArrayOutputStream(4096);
+                dout = new DataOutputStream(bout);
+                out = new ObjectOutputStream(dout);
                 switch (in.readInt()) {
-                    case ServerController.SERVER_READY:
-                        out.writeInt(ServerController.OK);
-                        sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, receivePacket.getAddress(), receivePacket.getPort());
-                        serverSocket.send(sendPacket);
-                        break;
-                    case ServerController.CLOSE_SERVER:
-                        return;
-                    case ServerController.SEND_GAME_OBJECT_DATA:
-                        out.writeInt(ServerController.READY_FOR_GAME_OBJECT_DATA);
-                        sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, receivePacket.getAddress(), receivePacket.getPort());
-                        serverSocket.send(sendPacket);
-                        receivePacket = new DatagramPacket(new byte[4096], 4096);
-                        serverSocket.receive(receivePacket);
-                        in = new DataInputStream(new ByteArrayInputStream(receivePacket.getData()));
-
-                        int x = in.readInt();
-                        int y = in.readInt();
-                        int dx = in.readInt();
-                        int dy = in.readInt();
-                        System.out.println("SERVER: client send x=" + x + ", y=" + y + ", dx=" + dx + ", dy=" + dy + ".");
-                        bout = new ByteArrayOutputStream(4096);
-                        out = new DataOutputStream(bout);
-                        out.writeInt(ServerController.GAME_OBJECT_DATA_ACCEPTED);
-                        sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, receivePacket.getAddress(), receivePacket.getPort());
-                        serverSocket.send(sendPacket);
-                        break;
+                    default:
+                        System.out.println("bla");
                 }
-            } catch (SocketException ex) {
-                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             }
