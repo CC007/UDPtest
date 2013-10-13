@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,11 +52,9 @@ public class ServerController extends Thread {
                 receivePacket = new DatagramPacket(new byte[4096], 4096);
                 socket.receive(receivePacket);
                 bin = new ByteArrayInputStream(receivePacket.getData());
-                din = new DataInputStream(bin);
-                in = new ObjectInputStream(din);
+                in = new ObjectInputStream(bin);
                 bout = new ByteArrayOutputStream(4096);
-                dout = new DataOutputStream(bout);
-                out = new ObjectOutputStream(dout);
+                out = new ObjectOutputStream(bout);
                 switch (in.readInt()) {
                     default:
                         System.out.println("bla");

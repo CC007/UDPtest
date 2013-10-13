@@ -47,9 +47,9 @@ public class ClientController extends Thread implements Serializable {
             try {
                 if (counter == 0) {
                     bout = new ByteArrayOutputStream(4096);
-                    dout = new DataOutputStream(bout);
-                    out = new ObjectOutputStream(dout);
+                    out = new ObjectOutputStream(bout);
                     out.writeInt(2);
+                    out.flush();
                 }
                 sendPacket = new DatagramPacket(bout.toByteArray(), bout.toByteArray().length, serverAddress);
                 socket.send(sendPacket);
